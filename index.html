@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B3A · Shenzhen Bay Port ⇄ Fu Tai Estate</title>
+<style>
+  :root{
+    --bg:#f4f4f1;
+    --card:#ffffff;
+    --ink:#14161a;
+    --ink-2:#5b6169;
+    --ink-3:#8b9199;
+    --line:#e6e6e1;
+    --accent:#ffc72c;
+    --accent-ink:#1a1a1a;
+    --soon:#0f8a3c;
+    --late:#b4432a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Helvetica Neue","PingFang HK","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:22px 18px 18px;
+  }
+  .app{width:100%;max-width:460px;display:flex;flex-direction:column;gap:16px}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:flex-start;gap:12px}
+  .route-pill{
+    flex:0 0 auto;
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:-.02em;
+    padding:8px 13px;
+    border-radius:12px;
+    line-height:1;
+    box-shadow:0 1px 0 rgba(0,0,0,.06);
+  }
+  .titles{padding-top:2px;min-width:0}
+  h1{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+  .sub{font-size:12px;color:var(--ink-3);margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .sub .sep{opacity:.5}
+
+  /* ---------- board ---------- */
+  .group{display:flex;flex-direction:column;gap:8px}
+  .ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 4px}
+  .gl{font-size:13px;font-weight:700;letter-spacing:-.005em;color:var(--ink);min-width:0}
+  .gl .zh{font-weight:600;color:var(--ink-3);margin-left:6px;font-size:12px}
+  .gr{font-size:10.5px;color:var(--ink-3);text-align:right;line-height:1.35;flex:0 0 auto;max-width:55%}
+
+  .board{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(20,22,26,.04),0 8px 24px -12px rgba(20,22,26,.14);
+    transition:opacity .25s ease;
+  }
+  .board.stale{opacity:.5}
+  .row{
+    display:flex;align-items:center;gap:14px;
+    padding:15px 18px 15px 15px;
+    border-top:1px solid var(--line);
+    border-left:4px solid transparent;
+  }
+  .row:first-child{border-top:0}
+  .row.soon{border-left-color:var(--soon)}
+  .row.due{border-left-color:var(--late)}
+  .when{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:6px}
+  .mins{
+    font-size:42px;font-weight:750;line-height:1;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+    min-width:1.55em;
+  }
+  .row.soon .mins{color:var(--soon)}
+  .row.due .mins{color:var(--late)}
+  .unit{font-size:13.5px;font-weight:600;color:var(--ink-3);letter-spacing:0}
+  .mins.word{font-size:28px;letter-spacing:-.02em}
+  .info{text-align:right;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .clock{font-size:15px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .tag{
+    font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--ink-3);
+    background:#f2f2ee;border:1px solid var(--line);
+    padding:2px 6px;border-radius:5px;
+  }
+
+  /* states */
+  .state{padding:26px 18px;text-align:center}
+  .state .big{font-size:14.5px;font-weight:650}
+  .state .small{font-size:12px;color:var(--ink-3);margin-top:5px;line-height:1.5}
+  .state.err .big{color:var(--late)}
+  .skel{display:flex;flex-direction:column;gap:10px;padding:18px}
+  .skel i{display:block;height:32px;border-radius:9px;background:linear-gradient(90deg,#f1f1ec 25%,#f7f7f3 50%,#f1f1ec 75%);background-size:200% 100%;animation:sh 1.3s infinite}
+  .skel i:nth-child(2){width:72%}
+  .skel i:nth-child(3){width:45%}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* ---------- footer ---------- */
+  footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px}
+  .meta{font-size:11.5px;color:var(--ink-3);line-height:1.45}
+  .meta b{font-weight:600;color:var(--ink-2)}
+  .meta .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--soon);margin-right:5px;vertical-align:1px}
+  .meta .dot.wait{background:var(--accent)}
+  button{
+    font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);
+    background:var(--card);border:1px solid var(--line);
+    padding:7px 13px;border-radius:9px;cursor:pointer;
+    transition:background .15s,transform .1s;
+  }
+  button:hover{background:#fafaf7}
+  button:active{transform:scale(.97)}
+  button[disabled]{opacity:.5;cursor:default}
+  .src{font-size:10.5px;color:#a9aeb4;text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="route-pill">B3A</div>
+    <div class="titles">
+      <h1>Shenzhen Bay Port ⇄ Fu Tai Estate</h1>
+      <div class="sub">
+        <span>Citybus 城巴</span><span class="sep">·</span>
+        <span>Live departures</span><span class="sep">·</span>
+        <span>Every 30s</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="groups"></div>
+
+  <footer>
+    <div class="meta" id="meta"><span class="dot wait"></span>Connecting…</div>
+    <button id="refresh" type="button">Refresh</button>
+  </footer>
+
+  <div class="src" id="src"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* B3A: Shan King Estate ⇄ Shenzhen Bay Port.
+     Outbound "O": alight Shenzhen Bay Port · board Fu Tai Estate (003261).
+     Inbound  "I": board Shenzhen Bay Port (003208) · alight Fu Tai Shopping Centre (003262). */
+  var BOARDS = [
+    {
+      key: "toPort",
+      label: "To Shenzhen Bay Port",
+      labelZh: "往深圳灣口岸",
+      right: "from 富泰邨, 青山公路",
+      stop: "003261",
+      dir: "O",
+      srcNote: "Fu Tai Estate (003261)"
+    },
+    {
+      key: "toFuTai",
+      label: "To Fu Tai Estate",
+      labelZh: "往富泰",
+      right: "from 深圳灣口岸",
+      stop: "003208",
+      dir: "I",
+      srcNote: "Shenzhen Bay Port (003208)"
+    }
+  ];
+
+  var REFRESH_MS = 30000;
+  var STALE_MS = 90000;
+  var groupsEl = document.getElementById("groups");
+  var metaEl = document.getElementById("meta");
+  var srcEl = document.getElementById("src");
+  var btn = document.getElementById("refresh");
+  var nextRefreshAt = 0;
+
+  srcEl.innerHTML = "Data: Citybus open data via DATA.GOV.HK · Alight Fu Tai Shopping Centre (003262) returning";
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function hhmm(d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function hhmmss(d) { return hhmm(d) + ":" + pad(d.getSeconds()); }
+
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  /* ---------------- build shell ---------------- */
+
+  BOARDS.forEach(function (b) {
+    var g = el("div", "group");
+    var head = el("div", "ghead");
+    head.appendChild(el("div", "gl", b.label + '<span class="zh">' + b.labelZh + "</span>"));
+    head.appendChild(el("div", "gr", b.right));
+
+    b.boardEl = el("section", "board",
+      '<div class="skel"><i></i><i></i><i></i></div>');
+    b.etas = [];
+    b.rows = [];
+    b.fetchedAt = 0;
+    b.error = null;
+    b.loading = false;
+
+    g.appendChild(head);
+    g.appendChild(b.boardEl);
+    groupsEl.appendChild(g);
+  });
+
+  /* ---------------- fetch ---------------- */
+
+  function loadAll() {
+    BOARDS.forEach(function (b, i) {
+      setTimeout(function () { load(b); }, i * 120); // gentle stagger
+    });
+  }
+
+  function load(b) {
+    if (b.loading) return;
+    b.loading = true;
+    btn.disabled = true;
+
+    var url = "https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/" + b.stop + "/B3A?t=" + Date.now();
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 9000);
+
+    fetch(url, ctrl ? { signal: ctrl.signal, cache: "no-store" } : { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (json) {
+        clearTimeout(timer);
+        var now = Date.now();
+        var raw = (json && json.data) || [];
+
+        b.etas = raw
+          .filter(function (e) { return e && e.eta && e.dir === b.dir; })
+          .map(function (e) {
+            var rmk = ((e.rmk_en || "") + " " + (e.rmk_tc || "")).toLowerCase();
+            return {
+              t: new Date(e.eta).getTime(),
+              sched: rmk.indexOf("sched") > -1 || rmk.indexOf("預") > -1 || rmk.indexOf("预") > -1
+            };
+          })
+          .filter(function (e) { return e.t > now - 60000; })
+          .sort(function (x, y) { return x.t - y.t; })
+          .slice(0, 3);
+
+        b.fetchedAt = now;
+        b.error = null;
+        b.loading = false;
+        btn.disabled = false;
+        render(b);
+        tick();
+      })
+      .catch(function (err) {
+        clearTimeout(timer);
+        b.loading = false;
+        btn.disabled = false;
+        b.error = (err && err.name === "AbortError") ? "Request timed out" : ((err && err.message) || "Network error");
+        if (b.rows.length) { b.boardEl.classList.add("stale"); }
+        else { renderError(b); }
+        renderMeta();
+      });
+  }
+
+  /* ---------------- render ---------------- */
+
+  function render(b) {
+    b.boardEl.classList.remove("stale");
+    b.boardEl.innerHTML = "";
+    b.rows = [];
+
+    if (!b.etas.length) {
+      b.boardEl.appendChild(el("div", "state",
+        '<div class="big">No upcoming departures</div>' +
+        '<div class="small">Nothing reported from this stop right now —<br>the route may be outside its operating hours.</div>'));
+      renderMeta();
+      return;
+    }
+
+    b.etas.forEach(function (e) {
+      var row = el("div", "row");
+      var when = el("div", "when");
+      var minsEl = el("span", "mins", "–");
+      var unitEl = el("span", "unit", "min");
+      when.appendChild(minsEl);
+      when.appendChild(unitEl);
+
+      var info = el("div", "info");
+      info.appendChild(el("div", "clock", hhmm(new Date(e.t))));
+      if (e.sched) info.appendChild(el("div", "tag", "Scheduled"));
+
+      row.appendChild(when);
+      row.appendChild(info);
+      b.boardEl.appendChild(row);
+
+      b.rows.push({ row: row, minsEl: minsEl, unitEl: unitEl, e: e });
+    });
+
+    renderMeta();
+  }
+
+  function renderError(b) {
+    b.boardEl.classList.remove("stale");
+    b.boardEl.innerHTML = "";
+    b.boardEl.appendChild(el("div", "state err",
+      '<div class="big">Can’t reach the bus data</div>' +
+      '<div class="small">' + esc(b.error || "Network error") + "<br>Retrying every 30 seconds.</div>"));
+    renderMeta();
+  }
+
+  /* ---------------- per-second countdown ---------------- */
+
+  function tick() {
+    var now = Date.now();
+
+    BOARDS.forEach(function (b) {
+      var gone = false;
+
+      b.rows.forEach(function (r) {
+        var mins = (r.e.t - now) / 60000;
+        r.row.classList.remove("soon", "due");
+
+        if (mins < 1) {
+          r.row.classList.add("due");
+          r.minsEl.textContent = "Due";
+          r.minsEl.classList.add("word");
+          r.unitEl.style.display = "none";
+        } else {
+          if (mins < 6) r.row.classList.add("soon");
+          r.minsEl.classList.remove("word");
+          r.unitEl.style.display = "";
+          r.minsEl.textContent = String(Math.floor(mins));
+        }
+        if (now - r.e.t > 45000) gone = true;
+      });
+
+      if (gone) {
+        b.etas = b.etas.filter(function (e) { return Date.now() - e.t <= 45000; });
+        render(b);
+      }
+
+      if (b.fetchedAt && now - b.fetchedAt > STALE_MS) b.boardEl.classList.add("stale");
+    });
+
+    renderMeta();
+  }
+
+  function renderMeta() {
+    var now = Date.now();
+    var live = BOARDS.filter(function (b) { return b.fetchedAt; });
+
+    if (!live.length) {
+      metaEl.innerHTML = '<span class="dot wait"></span>' +
+        (BOARDS[0].loading ? "Connecting…" : "Waiting for data…");
+      return;
+    }
+
+    var oldest = live.reduce(function (m, b) { return Math.min(m, b.fetchedAt); }, Infinity);
+    var failed = BOARDS.some(function (b) { return b.error; });
+    var secs = Math.max(0, Math.ceil((nextRefreshAt - now) / 1000));
+    var fresh = now - oldest <= REFRESH_MS + 8000;
+
+    metaEl.innerHTML =
+      '<span class="dot' + (fresh ? "" : " wait") + '"></span>' +
+      "Updated <b>" + hhmmss(new Date(oldest)) + "</b> · " +
+      (failed ? "one board retrying" : "next update in " + secs + "s");
+  }
+
+  /* ---------------- loop ---------------- */
+
+  function schedule() {
+    nextRefreshAt = Date.now() + REFRESH_MS;
+    setTimeout(function loop() {
+      loadAll();
+      nextRefreshAt = Date.now() + REFRESH_MS;
+      setTimeout(loop, REFRESH_MS);
+    }, REFRESH_MS);
+  }
+
+  setInterval(tick, 1000);
+
+  btn.addEventListener("click", function () { loadAll(); });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      var now = Date.now();
+      if (BOARDS.some(function (b) { return now - b.fetchedAt > REFRESH_MS; })) loadAll();
+    }
+  });
+
+  loadAll();
+  schedule();
+})();
+</script>
+</body>
+</html>
